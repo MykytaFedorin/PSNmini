@@ -1,0 +1,11 @@
+services:
+  python_app:
+    container_name: psn-python
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+
