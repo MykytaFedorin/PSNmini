@@ -8,7 +8,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 async def say_hello(message: Message):
     kb = InlineKeyboardBuilder()
     kb.button(text="Магазин",
-              web_app=WebAppInfo(url="https://dbb5-37-132-243-122.ngrok-free.app"))
+              web_app=WebAppInfo(url="https://dear-sure-kangaroo.ngrok-free.app"))
     await message.answer("Привет, мы будем "
                          "рады видеть тебя "
                          "в нашем магазине по ссылке ниже",
