@@ -8,9 +8,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from parsing.init_driver import driver
-from typing import List, Any
+from typing import List, Any, TextIO
 from decimal import Decimal
 from datetime import datetime
+import time
+import random
 
 
 def find_parent_url(badge: WebElement) -> str | None:
@@ -203,7 +205,7 @@ def custom_json_handler(obj: Any) -> Any:
 
 def parse_game(url: str,
                game_data: list):
-    '''parse all games on page'''
+    '''parse game on it's page'''
     while True:
         logger.info("Начинаю обработку игры")
         try:
@@ -218,24 +220,60 @@ def parse_page(page_url: str):
     '''Parse on page of game catalog'''
     game_data=[]
     try:
-        with open("product_data.json", "a", encoding="utf-8") as json_file:
+        with open("product_data.json",
+                  mode="w",
+                  encoding="utf-8") as json_file:
             for link in get_game_links(page_url):
-                parse_game(link, game_data)
+                time.sleep(random.uniform(1, 10))
+                parse_game(link,
+                           game_data)
             json.dump(game_data,
                       json_file,
                       ensure_ascii=False,
                       indent=4,
                       default=custom_json_handler)
+
         logger.info(f"Запись данных в JSON завершена")
     except Exception as ex:
         logger.error(f"Не получилось спарсить игры по скидке: {ex}")
 
+def get_number_of_pages() -> int:
+    '''Open first page of 
+    catalogue and find total
+    number of pages'''
+    paginator_locator = ("ol.psw-l-space-x-1."
+                         "psw-l-line-center."
+                         "psw-list-style-none")
+    page_url = ("https://store.playstation.com/"
+                "en-tr/category/83a687fe-bed7-448c"
+                "-909f-310e74a71b39/")
+    wait = WebDriverWait(driver, 10)
+    while True:
+        try:
+            logger.info("Открываю каталог")
+            driver.get(page_url)  
+            logger.info("Жду пока появится пагинатор")
+            paginator = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR,
+                                                         paginator_locator)))
+            logger.info("Пагинатор появился")
+            li_tags = paginator.find_elements(By.CSS_SELECTOR, "li")
+            total_number = li_tags[-1].text
+            logger.debug(f"Кол-во страниц: {total_number}")
+            return int(total_number) 
+        except Exception as ex:
+            logger.error("Не получилось найти кол-во страниц")
+        logger.info("Пробую найти кол-во страниц еще раз")
+
 
 def parse_games() -> None:
-    '''Parse actual games list in PSN-store and save it to json'''
-    page_url = "https://store.playstation.com/en-tr/category/83a687fe-bed7-448c-909f-310e74a71b39/"
+    '''Parse actual games list
+       in PSN-store and save it to json'''
+    page_url = ("https://store.playstation.com/"
+                "en-tr/category/83a687fe-bed7-448c"
+                "-909f-310e74a71b39/")
+    pages = get_number_of_pages() # не использую, так как опасаюсь бана
     try:
-        for i in range(1, 244):
+        for i in range(1, 2):
             logger.info(f"Начинаю парсить {i} страницу")
             url = f"{page_url}{i}"
             parse_page(url)
