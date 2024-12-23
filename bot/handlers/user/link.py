@@ -4,6 +4,7 @@ from aiogram.types import Message, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
+
 @form_router.message(Command("start"))
 async def say_hello(message: Message):
     kb = InlineKeyboardBuilder()

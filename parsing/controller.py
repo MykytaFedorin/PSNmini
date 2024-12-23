@@ -1,9 +1,18 @@
 from fastapi import FastAPI, HTTPException
 import json
 from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
 
 # Инициализация приложения FastAPI
 app = FastAPI()
+# Настройка CORS, чтобы разрешить запросы с домена, на котором работает `psn-bot`
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Указание на домен, с которого будут приходить запросы
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Путь к файлу product_data.json
 DATA_FILE = Path("product_data.json")

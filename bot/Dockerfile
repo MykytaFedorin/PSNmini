@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y wget curl gnupg && \
     echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
     | tee /etc/apt/sources.list.d/ngrok.list && \
     apt-get update && apt-get install -y ngrok
+
+COPY ./cert.pem /usr/local/share/ca-certificates/cert.pem
+
 # Устанавливаем рабочую директорию
 WORKDIR /app
 

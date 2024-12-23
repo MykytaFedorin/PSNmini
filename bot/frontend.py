@@ -1,7 +1,19 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+import httpx
 
 app = FastAPI()
+
+# Контейнер с API, к которому мы будем проксировать запросы
+PSN_PARSER_API_URL = "http://psn-parser:9000"
+
+# Проксирование запроса на эндпоинт /games
+@app.get("/games")
+async def proxy_get_games():
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{PSN_PARSER_API_URL}/games")
+        return response.json()
+
 
 @app.get("/", response_class=HTMLResponse)
 async def get_interface():

@@ -8,6 +8,8 @@ services:
       - ./bot:/app
     ports:
       - "8000:8000"
+    networks:
+      - psn-network
 
   psn_parser:
     container_name: psn-parser
@@ -18,4 +20,12 @@ services:
       - ./parsing:/app
     ports:
       - "7000:8000"
+      - "9000:9000"
+      - "443:443"
+    networks:
+      - psn-network
+
+networks:
+  psn-network:
+    driver: bridge
 

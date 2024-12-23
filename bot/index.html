@@ -3,107 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSN Store Discounts</title>
+    <title>Product Details</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
             margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
+            padding: 20px;
         }
-        header {
-            background-color: #6200ea;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-        }
-        main {
-            margin: 20px;
-        }
-        .game-card {
-            border: 1px solid #ccc;
-            border-radius: 8px;
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
             background-color: #fff;
-            margin-bottom: 20px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        .game-card h3 {
-            margin: 0 0 10px;
-            font-size: 1.2em;
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        .product {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .product:last-child {
+            border-bottom: none;
+        }
+        .product-title {
+            font-size: 24px;
+            font-weight: bold;
             color: #333;
         }
-        .game-card p {
-            margin: 5px 0;
-            font-size: 0.9em;
-            color: #555;
+        .product-info {
+            margin: 10px 0;
         }
-        .filter {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .filter label {
+        .product-info span {
             font-weight: bold;
         }
-        .filter input {
-            padding: 5px;
-            width: 80px;
+        .price {
+            font-size: 22px;
+            color: #d9534f;
+        }
+        .original-price {
+            text-decoration: line-through;
+            color: #777;
+        }
+        .rating {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .rating span {
+            margin-left: 5px;
+        }
+        .discount-info {
+            color: #5bc0de;
+            font-weight: bold;
+        }
+        .discount-descriptor {
+            margin-top: 20px;
+            font-style: italic;
+            color: #555;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>PSN Store Discounts</h1>
-    </header>
-    <main>
-        <!-- Filter Section -->
-        <div class="filter">
-            <label for="discount-filter">Минимальная скидка:</label>
-            <input type="number" id="discount-filter" placeholder="50">
-            <button onclick="applyFilter()">Применить</button>
-        </div>
-        <!-- Game Cards Section -->
-        <div id="games-container">
-            <!-- Сюда будут добавляться карточки игр -->
-        </div>
-    </main>
-    <script>
-        // Пример данных
-        const gamesData = [
-            { title: "Game 1", price: "100₺", oldPrice: "200₺", discount: 50, endDate: "2024-12-31", link: "#" },
-            { title: "Game 2", price: "80₺", oldPrice: "160₺", discount: 50, endDate: "2024-12-15", link: "#" },
-        ];
 
-        // Рендеринг игр
-        function renderGames(data) {
-            const container = document.getElementById("games-container");
-            container.innerHTML = ""; // Очистка перед добавлением
-            data.forEach(game => {
-                const card = document.createElement("div");
-                card.classList.add("game-card");
-                card.innerHTML = `
-                    <h3>${game.title}</h3>
-                    <p>Цена: ${game.price} (Старая: ${game.oldPrice})</p>
-                    <p>Скидка: ${game.discount}%</p>
-                    <p>Заканчивается: ${game.endDate}</p>
-                    <a href="${game.link}" target="_blank">Подробнее</a>
+<div class="container">
+    <h1>Product Details</h1>
+
+    <div id="products-list"></div> <!-- Сюда будет вставляться список товаров -->
+</div>
+
+<script>
+    // Функция для получения данных с API и отображения списка товаров
+    async function fetchProductDetails() {
+        try {
+            const response = await fetch('https://dear-sure-kangaroo.ngrok-free.app/games');
+            const products = await response.json(); // Ожидаем, что это будет массив с играми
+
+            const productsListContainer = document.getElementById('products-list');
+            productsListContainer.innerHTML = ''; // Очищаем контейнер перед добавлением новых данных
+
+            products.forEach(product => {
+                // Создаем новый элемент для каждого продукта
+                const productElement = document.createElement('div');
+                productElement.classList.add('product');
+
+                // Вставляем данные о продукте
+                productElement.innerHTML = `
+                    <div class="product-title">${product.title}</div>
+                    <div class="product-info"><span>Platform:</span> ${product.platform}</div>
+                    <div class="product-info"><span>Version:</span> ${product.version}</div>
+                    <div class="rating">
+                        <span>Average Rating:</span>
+                        <span>${product.rating} stars</span>
+                        <span>(${product.ratingCount} ratings)</span>
+                    </div>
+                    <div class="price">$${product.price}</div>
+                    <div class="original-price">$${product.originalPrice}</div>
+                    <div class="discount-info">${product.discountInfo}</div>
+                    <div class="discount-descriptor">Offer valid until: ${product.discountDescriptor}</div>
                 `;
-                container.appendChild(card);
+
+                // Добавляем элемент в список
+                productsListContainer.appendChild(productElement);
             });
+        } catch (error) {
+            console.error('Error fetching product data:', error);
         }
+    }
 
-        // Применение фильтра
-        function applyFilter() {
-            const minDiscount = parseInt(document.getElementById("discount-filter").value) || 0;
-            const filteredData = gamesData.filter(game => game.discount >= minDiscount);
-            renderGames(filteredData);
-        }
+    // Загружаем данные при загрузке страницы
+    window.onload = fetchProductDetails;
+</script>
 
-        // Первоначальный рендеринг
-        renderGames(gamesData);
-    </script>
 </body>
 </html>
 
