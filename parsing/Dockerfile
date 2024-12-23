@@ -24,5 +24,8 @@ WORKDIR /app
 
 COPY . /app
 
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+RUN chown 755 /app/start.sh
 
-# CMD ["python", "app.py"]
+CMD ["/app/start.sh"]

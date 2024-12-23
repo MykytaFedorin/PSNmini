@@ -16,4 +16,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./parsing:/app
+    ports:
+      - "7000:8000"
 

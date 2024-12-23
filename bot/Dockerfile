@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 # Создаем скрипт для запуска приложения и ngrok
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
-RUN chown 777 /app/start.sh
+RUN chown 755 /app/start.sh
 # Пример запуска контейнера с ngrok
 CMD ["/app/start.sh"]
 #CMD ["python", "app.py"]
