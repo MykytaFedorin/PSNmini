@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 import httpx
 
 app = FastAPI()
@@ -20,4 +21,7 @@ async def get_interface():
     with open("index.html", "r", encoding="utf-8") as file:
         html_content = file.read()
     return HTMLResponse(content=html_content)
+
+# Обслуживание статических файлов (JS, CSS и другие)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
