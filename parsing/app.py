@@ -3,12 +3,11 @@ import pytz
 import re
 from selenium.webdriver.common.by import By
 from app_logger import logger
-from selenium.common.exceptions import SessionNotCreatedException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
-from parsing.init_driver import driver
-from typing import List, Any, TextIO
+from init_driver import driver
+from typing import List, Any
 from decimal import Decimal
 from datetime import datetime
 import time
@@ -282,4 +281,6 @@ def parse_games() -> None:
     finally:
         driver.quit()
 
-parse_games()
+
+if __name__ == "__main__":
+    parse_games()

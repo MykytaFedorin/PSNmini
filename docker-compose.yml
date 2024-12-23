@@ -1,11 +1,19 @@
 services:
-  python_app:
-    container_name: psn-python
+  psn_bot:
+    container_name: psn-bot
     environment:
       BOT_TOKEN: ${BOT_TOKEN}
     build:
-      context: .
+      context: ./bot
       dockerfile: Dockerfile
     volumes:
-      - .:/app
+      - ./bot:/app
+
+  psn_parser:
+    container_name: psn-parser
+    build:
+      context: ./parsing
+      dockerfile: Dockerfile
+    volumes:
+      - ./parsing:/app
 
