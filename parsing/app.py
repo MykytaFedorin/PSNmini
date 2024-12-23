@@ -187,6 +187,7 @@ def get_game_info(url: str) -> dict:
         game_data["discount_info"] = discount_info
         game_data["original_price"] = original_price
         game_data["discount_descriptor"] = discount_descriptor
+        game_data["url"] = url
         return game_data
     except Exception as ex:
         logger.error(f"Не удалось получить информацию"
