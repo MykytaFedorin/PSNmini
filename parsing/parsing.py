@@ -144,6 +144,26 @@ def get_game_original_price() -> Decimal:
         logger.error(f"Не получилось найти прошлую цену игры: {ex}")
         raise ex
 
+def get_discount_info():
+    '''find discount expiring date and 
+    return it'''
+    discount_info_locator = "[data-qa=\"mfeCtaMain#offer0#discountInfo\"]"
+    script = ("return document.querySelector"
+              f"('{discount_info_locator}');")
+    try:
+        logger.debug("Жду загрузки размера скидки")
+        wait = WebDriverWait(driver, 10)
+        info_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, discount_info_locator)))
+        logger.debug("Размер скидки прогрузился") 
+        discount_info = info_element.text
+        if not discount_info:
+            discount_info = info_element.get_attribute("innerHTML")
+
+        logger.debug(f"Размер скидки: {discount_info}")
+        return discount_info
+    except Exception as ex:
+        logger.error(f"Не могу найти дату окончания скидки: {ex}")
+        raise ex
 
 def get_game_info(url: str) -> dict:
     '''Append product info to json file'''
@@ -156,11 +176,14 @@ def get_game_info(url: str) -> dict:
         if price > 0:
             original_price = get_game_original_price()
             discount_descriptor = get_discount_descriptor()
+            discount_info = get_discount_info()
         else:
             discount_descriptor = ""
             original_price = Decimal(0)
+            discount_info = ""
         game_data["title"] = title
         game_data["price"] = price
+        game_data["discount_info"] = discount_info
         game_data["original_price"] = original_price
         game_data["discount_descriptor"] = discount_descriptor
         return game_data
@@ -178,27 +201,47 @@ def custom_json_handler(obj: Any) -> Any:
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
 
+def parse_game(url: str,
+               game_data: list):
+    '''parse all games on page'''
+    while True:
+        logger.info("Начинаю обработку игры")
+        try:
+            game_data.append(get_game_info(url))
+            break
+        except Exception as ex:
+            logger.error("Цикл прерван")
+        logger.info("Пробую заново")
+
+
+def parse_page(page_url: str):
+    '''Parse on page of game catalog'''
+    game_data=[]
+    try:
+        with open("product_data.json", "a", encoding="utf-8") as json_file:
+            for link in get_game_links(page_url):
+                parse_game(link, game_data)
+            json.dump(game_data,
+                      json_file,
+                      ensure_ascii=False,
+                      indent=4,
+                      default=custom_json_handler)
+        logger.info(f"Запись данных в JSON завершена")
+    except Exception as ex:
+        logger.error(f"Не получилось спарсить игры по скидке: {ex}")
+
 
 def parse_games() -> None:
     '''Parse actual games list in PSN-store and save it to json'''
-    game_data=[]
-    page_url = "https://store.playstation.com/en-tr/category/83a687fe-bed7-448c-909f-310e74a71b39/1"
+    page_url = "https://store.playstation.com/en-tr/category/83a687fe-bed7-448c-909f-310e74a71b39/"
     try:
-        with open("product_data.json", "w", encoding="utf-8") as json_file:
-
-            for link in get_game_links(page_url):
-                while True:
-                    logger.info("Начинаю обработку игры")
-                    try:
-                        game_data.append(get_game_info(link))
-                        break
-                    except Exception as ex:
-                        logger.error("Цикл прерван")
-                    logger.info("Пробую заново")
-            json.dump(game_data, json_file, ensure_ascii=False, indent=4, default=custom_json_handler)
-        logger.info(f"Запись данных в JSON завершена")
-        driver.quit()
+        for i in range(1, 244):
+            logger.info(f"Начинаю парсить {i} страницу")
+            url = f"{page_url}{i}"
+            parse_page(url)
     except Exception as ex:
-        logger.error(f"Не получилось спарсить игры по скидке: {ex}")
-     
+        logger.error(f"Не получилось спарсить страницу игр: {ex}")
+    finally:
+        driver.quit()
+
 parse_games()
