@@ -8,6 +8,8 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./bot:/app
+    ports:
+      - "8000:8000"
 
   psn_parser:
     container_name: psn-parser
