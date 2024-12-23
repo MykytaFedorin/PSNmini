@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from parsing.init_driver import driver
-from typing import List
+from typing import List, Any
 from decimal import Decimal
 from datetime import datetime
 
@@ -69,6 +69,8 @@ def get_game_price() -> Decimal:
 
         price_element = driver.execute_script(script)
         price_raw = price_element.get_attribute("innerHTML")
+        if "Free" in price_raw:
+            return Decimal(0)
         price_clean = re.sub(r"&nbsp;|\s|TL", "", price_raw)
         price_clean = price_clean.replace(".", "").replace(",", ".")
         logger.debug(f"Цена: {price_clean}")
@@ -81,14 +83,19 @@ def get_game_price() -> Decimal:
 def get_discount_descriptor() -> datetime:
     '''find discount descriptor at game's
        page and return it'''
+    discount_descriptor_locator = "[data-qa=\"mfeCtaMain#offer0#discountDescriptor\"]"
     script = ("return document.querySelector"
-              "('[data-qa=\"mfeCtaMain#offer0#discountDescriptor\"]');")
+              f"('{discount_descriptor_locator}');")
     try:
-        descriptor = driver.execute_script(script)
+        logger.debug("Жду загрузки условий скидки")
+        wait = WebDriverWait(driver, 10)
+        descriptor = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, discount_descriptor_locator)))
+        logger.debug("Условия скидки прогрузились") 
         date_str = descriptor.text
+        if not date_str:
+            date_str = descriptor.get_attribute("innerHTML")
 
-        date_str = date_str.replace("Offer ends ", "")
-        date_str = date_str.replace(" GMT+1", "")
+        date_str = date_str.replace("Offer ends ", "").replace(" GMT+1", "").replace(" UTC", "")
 
         date_format = "%m/%d/%Y %I:%M %p"
 
@@ -118,8 +125,8 @@ def get_game_original_price() -> Decimal:
         
         price_raw = price_element.text
         logger.debug(f"price_raw: {price_raw}")
-         
 
+        price_element = driver.find_element(By.CSS_SELECTOR, price_locator)
         if not price_raw:
             logger.error("Элемент с ценой не найден")
             price_raw = price_element.get_attribute("innerHTML").split("</span>")[2]
@@ -144,10 +151,14 @@ def get_game_info(url: str) -> dict:
     try:
         driver.get(url)
         logger.info("Открыл страницу с игрой")
-        title = get_game_title()
         price = get_game_price()
-        original_price = get_game_original_price()
-        discount_descriptor = get_discount_descriptor()
+        title = get_game_title()
+        if price > 0:
+            original_price = get_game_original_price()
+            discount_descriptor = get_discount_descriptor()
+        else:
+            discount_descriptor = ""
+            original_price = Decimal(0)
         game_data["title"] = title
         game_data["price"] = price
         game_data["original_price"] = original_price
@@ -158,6 +169,15 @@ def get_game_info(url: str) -> dict:
                       f"о продукте {url}: {ex}")
         raise ex
 
+def custom_json_handler(obj: Any) -> Any:
+    """Обработчик для сериализации нестандартных объектов JSON."""
+    if isinstance(obj, Decimal):
+        return float(obj)  # Или str(obj), если нужно сохранить точность
+    if isinstance(obj, datetime):
+        return obj.isoformat()  # Преобразует datetime в строку ISO 8601
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+
 
 def parse_games() -> None:
     '''Parse actual games list in PSN-store and save it to json'''
@@ -165,9 +185,17 @@ def parse_games() -> None:
     page_url = "https://store.playstation.com/en-tr/category/83a687fe-bed7-448c-909f-310e74a71b39/1"
     try:
         with open("product_data.json", "w", encoding="utf-8") as json_file:
+
             for link in get_game_links(page_url):
-                game_data.append(get_game_info(link))
-            json.dump(game_data, json_file, ensure_ascii=False, indent=4)
+                while True:
+                    logger.info("Начинаю обработку игры")
+                    try:
+                        game_data.append(get_game_info(link))
+                        break
+                    except Exception as ex:
+                        logger.error("Цикл прерван")
+                    logger.info("Пробую заново")
+            json.dump(game_data, json_file, ensure_ascii=False, indent=4, default=custom_json_handler)
         logger.info(f"Запись данных в JSON завершена")
         driver.quit()
     except Exception as ex:
