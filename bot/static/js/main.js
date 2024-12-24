@@ -1,6 +1,6 @@
 async function fetchProductDetails() {
     try {
-        const response = await fetch('https://dear-sure-kangaroo.ngrok-free.app/games');
+        const response = await fetch('/games');
         const data = await response.json();
         const products = data.games;
 

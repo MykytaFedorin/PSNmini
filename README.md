@@ -1,4 +1,4 @@
-# How to Deploy PSNmini on Linux
+# How to deploy PSNmini on Linux
 
 ## 1. Install Docker
 
@@ -59,11 +59,12 @@ cd PSNmini
 
 ## 3. Get Ngrok key
 1. Go to the https://dashboard.ngrok.com  and sign up
-2. Claim a static domain on https://dashboard.ngrok.com/get-started/setup/linux in Static Domain section.
+2. Claim a static domain(url) on https://dashboard.ngrok.com/get-started/setup/linux in Static Domain section.
 3. Below Static Domain section you are able to find your auth-key. Copy it and go to the project root folder
 ```bash
 
 cd ~/PSNmini
+echo "export NGROK_URL=your_ngrok_static_url" > bot/data/.env.sh
 echo "export NGROK_TOKEN=your_ngrok_token" > bot/data/.env.sh
 echo "export BOT_TOKEN=your_tg_bot_token" > bot/data/.env.sh
 

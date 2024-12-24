@@ -6,7 +6,7 @@ update-ca-certificates
 ngrok config add-authtoken $NGROK_TOKEN
 
 python /app/app.py &
-ngrok http --url=dear-sure-kangaroo.ngrok-free.app 8000
+ngrok http --url=$NGROK_URL 8000
 
 # Запуск вашего приложения (замените на актуальную команду запуска вашего бота)
 
