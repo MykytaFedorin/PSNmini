@@ -1,5 +1,6 @@
 import json
 import pytz
+import os
 import re
 from selenium.webdriver.common.by import By
 from app_logger import logger
@@ -217,25 +218,29 @@ def parse_game(url: str,
 
 
 def parse_page(page_url: str):
-    '''Parse on page of game catalog'''
-    game_data=[]
-    try:
-        with open("product_data.json",
-                  mode="w",
-                  encoding="utf-8") as json_file:
-            for link in get_game_links(page_url):
-                time.sleep(random.uniform(1, 10))
-                parse_game(link,
-                           game_data)
-            json.dump(game_data,
-                      json_file,
-                      ensure_ascii=False,
-                      indent=4,
-                      default=custom_json_handler)
+    '''Parse one page of the game catalog'''
+    game_data = []
+    
+    # Проверяем, существует ли файл и пустой ли он
+    file_path = "product_data.json"
+    if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+        try:
+            with open(file_path, mode="w", encoding="utf-8") as json_file:
+                for link in get_game_links(page_url):
+                    time.sleep(random.uniform(1, 10))  # Имитируем случайную задержку
+                    parse_game(link, game_data)
 
-        logger.info(f"Запись данных в JSON завершена")
-    except Exception as ex:
-        logger.error(f"Не получилось спарсить игры по скидке: {ex}")
+                # Записываем данные в файл, если файл пустой или не существует
+                json.dump(game_data,
+                          json_file,
+                          ensure_ascii=False,
+                          indent=4,
+                          default=custom_json_handler)
+        except Exception as e:
+            print(f"Ошибка при записи в файл: {e}")
+    else:
+        print(f"Файл {file_path} уже существует и не пустой.")
+
 
 def get_number_of_pages() -> int:
     '''Open first page of 
