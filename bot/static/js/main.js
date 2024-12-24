@@ -29,8 +29,8 @@ function displayProducts(products) {
         // Основная разметка продукта
         productElement.innerHTML = `
             <div class="product-title">${product.title}</div>
-            <div class="price">$${product.price}</div>
-            <div class="original-price">$${product.original_price}</div>
+            <div class="price">${product.price} TL</div>
+            <div class="original-price">${product.original_price} TL</div>
             <div class="discount-info">${product.discount_info}</div>
             <div class="discount-descriptor">
                 <button class="show-link-btn">Show More</button>
