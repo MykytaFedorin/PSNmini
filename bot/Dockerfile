@@ -16,7 +16,6 @@ COPY ./cert.pem /usr/local/share/ca-certificates/cert.pem
 WORKDIR /app
 
 # Копируем файлы проекта
-COPY ./data/.env /app/data/.env
 COPY ./requirements.txt /app/requirements.txt
 COPY . /app
 
