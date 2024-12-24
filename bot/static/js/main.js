@@ -25,15 +25,41 @@ function displayProducts(products) {
     products.forEach(product => {
         const productElement = document.createElement('div');
         productElement.classList.add('product');
+
+        // Основная разметка продукта
         productElement.innerHTML = `
-            <div class="product-title">
-            <a href="${product.url}">${product.title}</a></div>
+            <div class="product-title">${product.title}</div>
             <div class="price">$${product.price}</div>
             <div class="original-price">$${product.original_price}</div>
             <div class="discount-info">${product.discount_info}</div>
-            <div class="discount-descriptor">Offer valid until: ${product.discount_descriptor}</div>
+            <div class="discount-descriptor">
+                <button class="show-link-btn">Show More</button>
+            </div>
+            <div class="product-link" style="display: none;">
+                <a href="${product.url}" target="_blank">View Product</a>
+                <div class="discount-end-date">Discount ends: ${product.discount_descriptor}</div>
+            </div>
         `;
+
+        // Добавляем элемент в список
         productsListContainer.appendChild(productElement);
+    });
+
+    // Добавляем обработчики событий для кнопок "Show More"
+    const showLinkButtons = document.querySelectorAll('.show-link-btn');
+    showLinkButtons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+            const productLink = document.querySelectorAll('.product-link')[index];
+
+            // Переключение отображения ссылки и кнопки
+            if (productLink.style.display === 'none') {
+                productLink.style.display = 'block';
+                button.textContent = 'Show Less';
+            } else {
+                productLink.style.display = 'none';
+                button.textContent = 'Show More';
+            }
+        });
     });
 }
 
